@@ -61,7 +61,7 @@ To make things a little clearer, here's an example of how to use packrat:
 
   async function main() {
 
-    const db = await packrat('json.db')
+    let db = await packrat('json.db')
 
     let item = { a: 1 }
     db.add(item)
@@ -79,7 +79,9 @@ To make things a little clearer, here's an example of how to use packrat:
 ```
 
 ### Constraints on Items
-Items must be objects or arrays.  Primitive types (including strings)
+Items must be objects or arrays.  
+
+Primitive types (including strings)
 and functions are not supported since they cannot be assigned an "id"
 property which they hold and maintain over time and which is necessary
 for efficient storage and retrieval via JSON.  Functions can hold such
@@ -93,6 +95,8 @@ JSON render and re-animation cycles, some values of these types do not
 using JSON.stringify/JSON.parse.
 
 ### Constraints on Ids
+Ids must be strings or integers.
+
 If you assign your own id to items stored by packrat, you must use either
 a string or an integer (which satisfies Number.isInteger).  -0 will be
 converted to 0.  Floats are not supported since they may not survive
@@ -117,7 +121,7 @@ name but exist on a sub object.  So, instead of calling `db.add(...)` you would
 instead call `db.throws.add(...)` as shown in the example below.
 
 ```javascript
-  const db = await packrat('json.db')
+  let db = await packrat('json.db')
   
   // Normal null-returning approach
   let item = { id: 1.3 } // fails since float id's are invalid
@@ -138,7 +142,7 @@ instead call `db.throws.add(...)` as shown in the example below.
 If you want to use the "throwing" version of the API but not type out `.throws` on
 every single call, you can use the shorthand `.e` which stands for error or exception as in 
 (`db.e.add(...)`), or just replace your version of the packrate instance variable with the 
-"throwing" version as shown below.  You can go back and forth between teh two versions
+"throwing" version as shown below.  You can go back and forth between the two versions
 by using `.throws` and `.doesNotThrow` as also depicted below.
 
 ```javascript
