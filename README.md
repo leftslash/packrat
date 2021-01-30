@@ -51,6 +51,7 @@ Also note that while the backing file contains JSON data for each item in the da
 the file itself is not valid JSON and cannot be slurped up using a require
 statement or a readFile/JSON.parse combination. 
 
+### Simple Example
 To make things a little clearer, here's an example of how to use packrat:
 
 ```javascript
@@ -105,3 +106,57 @@ make this thing work as simply and as fast for the vast majority of
 use cases.  If you want or need to do esoteric stuff it's on you in terms
 of complexity and performance.  You can always add your own extra code,
 wrap this module or fork it and make the mods you need.
+
+### Methods which throw errors
+By default, the get/set/add/update/drop methods return null if there is
+an error such as invalid item or item.id.  While this is typically sufficient
+for most use cases, some developers prefer code that throws errors with
+a more specific error message and a stacktrace.  In order to support this
+type of approach, packrat offers an alternative set of methods which have the same
+name but exist on a sub object.  So, instead of calling `db.add(...)` you would
+instead call `db.throws.add(...)` as shown in the example below.
+
+```javascript
+  const db = await packrat('json.db')
+  
+  // Normal null-returning approach
+  let item = { id: 1.3 } // fails since float id's are invalid
+  let ok = db.add(item)
+  if (!ok) {
+    console.error(`could not add item`)
+  }
+  
+  // Error try/catch approach
+  try {
+    let item = { id: 1.3 } // fails since float id's are invalid
+    db.throws.add(item)
+  } catch (e) {
+    console.error(`could not add item: ${e.message}`)  
+  }  
+```
+
+If you want to use the "throwing" version of the API but not type out `.throws` on
+every single call, you can use the shorthand `.e` which stands for error or exception as in 
+(`db.e.add(...)`), or just replace your version of the packrate instance variable with the 
+"throwing" version as shown below.  You can go back and forth between teh two versions
+by using `.throws` and `.doesNotThrow` as also depicted below.
+
+```javascript
+  let db = await packrat('file.db`)
+
+  // set the 'throwing' version as the default
+  let db = db.throws
+  
+  try {
+    let item = { id: 1.3 }
+    db.add(item)
+  } catch (e) {
+    console.error(`could not add item: ${e.message}`)  
+  }  
+  
+  let item = { id: 1.3 }
+  let ok = db.doesNotThrow.add(item)
+  if (!ok) {
+    console.error(`could not add item`)
+  }
+```
