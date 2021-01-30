@@ -15,20 +15,24 @@ and not all the changes recorded to that point in the transaction log.
 
 The main operations available for manipulating data in packrat are:
 
-  get(id)         retrieve an item by it's id 
-  set(item)       add or update an item (id is added to item if necessary)
-  add(item)       add an item if it does not exist (assumes item has an id)
-  update(item)    update an item if it does exist (assumes item has an id)
-  find(search)    find an item using a search callback function 
-  drop(id)        delete an item based on it's id
+```javascript
+  get(id)         // retrieve an item by it's id 
+  set(item)       // add or update an item (id is added to item if necessary)
+  add(item)       // add an item if it does not exist (assumes item has an id)
+  update(item)    // update an item if it does exist (assumes item has an id)
+  find(search)    // find an item using a search callback function 
+  drop(id)        // delete an item based on it's id
+```
 
 In addition, the database itself can be managed using the following methods:
 
-  packrat(file)   constructor to create a database with file as backing
-  load(file)      load and append data from file 
-  save()          save data in its entirety to current file
-  saveAs(file)    save data to an arbitrary file
-  clear()         empty the in-memory database
+```javascript
+  packrat(file)   // constructor to create a database with file as backing
+  load(file)      // load and append data from file 
+  save()          // save data in its entirety to current file
+  saveAs(file)    // save data to an arbitrary file
+  clear()         // empty the in-memory database
+ ```
 
 Note that save/saveAs operations are not necessary to maintain the 
 persistence of the in-memory version of the database.  As stated earlier,
