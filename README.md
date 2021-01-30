@@ -1,6 +1,8 @@
 # packrat
 a zero-dependency, lightweight, file-based JSON database
 
+## NOTE: This project is in development and not ready for use yet.
+
 Packrat allows simple operations on an in-memory dataset which are
 also stored asynchronously in a flat file in JSON format (i.e. it is a
 non-volatile, persistent data store).  Instead of re-writing the entire
