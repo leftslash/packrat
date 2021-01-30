@@ -2,21 +2,23 @@ const fs = require('fs')
 
 // TODO: re-write load/save to do JSON
 // TODO: add lots more tests
+// TODO: document errors
+// TODO: document keys, values...
+// TODO: create a makefile
+// TODO: add to npm and yarn
 
 function Packrat() {
-  this._file = null
-  this._data = {}
-  this._nextid = [1]
+  this._internals = {}
+  this._internals.file = null
+  this._internals.data = {}
+  this._internals.nextid = 1
   this.throws = this.e = new ThrowingPackrat(this)
   this.doesNotThrow = this.n = this
 }
 
-
 function ThrowingPackrat(parent) {
+  this._internals = parent._internals
   this._parent = parent
-  this._file = parent._file
-  this._data = parent._data
-  this._nextid = parent._nextid
   this.throws = this.e = this
   this.doesNotThrow = this.n = parent
 }
@@ -29,12 +31,12 @@ Packrat.prototype.load = function(file) {
     return Promise.reject()
   }
   return new Promise((resolve, reject) => {
-    fs.readFile(this._file, 'utf8', (err, data) => {
+    fs.readFile(this._internals.file, 'utf8', (err, data) => {
       if (err) {
         reject(err)
       } else {
-        this._file = file
-        this._data = data
+        this._internals.file = file
+        this._internals.data = data
         resolve(this)
       }
     })
@@ -42,11 +44,11 @@ Packrat.prototype.load = function(file) {
 }
 
 Packrat.prototype.save = function() {
-  if (!this._file) {
+  if (!this._internals.file) {
     return Promise.reject()
   }
   return new Promise((resolve, reject) => {
-    fs.writeFile(this._file, this._data, 'utf8', (err, data) => {
+    fs.writeFile(this._internals.file, this._internals.data, 'utf8', (err, data) => {
       if (err) {
         reject(err)
       } else {
@@ -57,17 +59,17 @@ Packrat.prototype.save = function() {
 }
 
 Packrat.prototype.saveAs = function(file) {
-  this._file = file
+  this._internals.file = file
   return this.save()
 }
 
 Packrat.prototype.clear = function() {
-  this._data = []
-  this._nextid = [1]
+  this._internals.data = []
+  this._internals.nextid = [1]
 }
 
 Packrat.prototype.get = function(id) {
-  return this._data[id]
+  return this._internals.data[id]
 }
 
 ThrowingPackrat.prototype.get = function(id) {
@@ -102,7 +104,7 @@ Packrat.prototype._set = function(item) {
   }
   this._addIdIfNecessary(item)
   this._writeTransactionLog(item)
-  this._data[item.id] = item
+  this._internals.data[item.id] = item
   return item
 }
 
@@ -129,11 +131,11 @@ Packrat.prototype._add = function(item) {
     return null
   }
   this._addIdIfNecessary(item)
-  if (this._data[item.id]) {
+  if (this._internals.data[item.id]) {
     return null
   }
   this._writeTransactionLog(item)
-  this._data[item.id] = item
+  this._internals.data[item.id] = item
   return item
 }
 
@@ -162,48 +164,48 @@ Packrat.prototype._update = function(item) {
   if (item.id === undefined) {
     return null
   }
-  if (!this._data[item.id]) {
+  if (!this._internals.data[item.id]) {
     return null
   }
   this._writeTransactionLog(item)
-  this._data[item.id] = id
+  this._internals.data[item.id] = id
   return item
 }
 
 Packrat.prototype.drop = function(id) {
   this._writeTransactionLog({id, _deleted: true})
-  return delete this._data[id]
+  return delete this._internals.data[id]
 }
 
 ThrowingPackrat.prototype.drop = function(id) {
-  if (!this._data[id]) {
+  if (!this._internals.data[id]) {
     throw new this.ItemNotFoundError()
   }
   return this.drop(id)
 }
 
 Packrat.prototype.find = function(callback) {
-  return Object.values(this._data).find(callback)
+  return Object.values(this._internals.data).find(callback)
 }
 
 Packrat.prototype.asArray = function(f, ...args) {
-  return f.call(Object.values(this._data), ...args)
+  return f.call(Object.values(this._internals.data), ...args)
 }
 
 Packrat.prototype.keys = function() {
-  return Object.keys(this._data)
+  return Object.keys(this._internals.data)
 }
 
 Packrat.prototype.values = function() {
-  return Object.values(this._data)
+  return Object.values(this._internals.data)
 }
 
 Packrat.prototype.entries = function() {
-  return Object.entries(this._data)
+  return Object.entries(this._internals.data)
 }
 
 Packrat.prototype.length = function() {
-  return Object.keys(this._data).length
+  return Object.keys(this._internals.data).length
 }
 
 Packrat.prototype.InvalidIdError = function() {
@@ -223,10 +225,11 @@ Packrat.prototype.ItemNotFoundError = function() {
 
 Packrat.prototype.InvalidIdError.prototype = Object.create(Error.prototype)
 Packrat.prototype.InvalidItemError.prototype = Object.create(Error.prototype)
+Packrat.prototype.ItemNotFoundError.prototype = Object.create(Error.prototype)
 
 Packrat.prototype._addIdIfNecessary = function(item) {
   if (item.id === undefined) {
-    item.id = this._nextid[0]++
+    item.id = this._internals.nextid++
   }
   // convert negative zero to normal zero (for JSON sake)
   if (item.id === -0) {
@@ -235,11 +238,11 @@ Packrat.prototype._addIdIfNecessary = function(item) {
 }
 
 Packrat.prototype._writeTransactionLog = function(item) {
-  if (!this._file) {
+  if (!this._internals.file) {
     return Promise.resolve()
   }
   return new Promise((resolve, reject) => {
-    fs.appendFile(this._file, `${JSON.stringify(item)}\n`, (err) => {
+    fs.appendFile(this._internals.file, `${JSON.stringify(item)}\n`, (err) => {
       if (err) {
         console.error(err)
         resolve()
