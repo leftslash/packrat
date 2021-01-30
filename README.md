@@ -13,6 +13,7 @@ Upon request, the database can be written out in it's entirety to the
 same or another file in a compacted format which contains just the data
 and not all the changes recorded to that point in the transaction log.
 
+### Manipulating Data
 The main operations available for manipulating data in packrat are:
 
 ```javascript
@@ -24,6 +25,7 @@ The main operations available for manipulating data in packrat are:
   drop(id)        // delete an item based on it's id
 ```
 
+### Managing Database
 In addition, the database itself can be managed using the following methods:
 
 ```javascript
