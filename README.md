@@ -71,7 +71,7 @@ To make things a little clearer, here's an example of how to use packrat:
     item.a = 2
     db.update(item)
 
-    item = await db.find(e => e.a === 2)
+    item = db.find(e => e.a === 2)
 
     db.remove(id)
 
