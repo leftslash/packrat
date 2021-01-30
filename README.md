@@ -1,5 +1,5 @@
 # Packrat
-a zero-dependency, lightweight, file-based JSON storage database
+a zero-dependency, lightweight, file-based JSON database
 
 Packrat allows simple operations on an in-memory dataset which are
 also stored asynchronously in a flat file in JSON format (i.e. it is a
