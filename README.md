@@ -47,6 +47,7 @@ statement or a readFile/JSON.parse combination.
 
 To make things a little clearer, here's an example of how to use packrat:
 
+```javascript
   const packrat = require('packrat')
 
   main() 
@@ -68,7 +69,7 @@ To make things a little clearer, here's an example of how to use packrat:
     db.remove(id)
 
   }
-
+```
 
 ### Constraints on Items
 Items must be objects or arrays.  Primitive types (including strings)
