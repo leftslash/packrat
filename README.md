@@ -1,4 +1,4 @@
-# Packrat
+# packrat
 a zero-dependency, lightweight, file-based JSON database
 
 Packrat allows simple operations on an in-memory dataset which are
