@@ -9,6 +9,7 @@ function Packrat() {
     data:   {},
     file:   null,
     nextid: 1,
+    pending_writes: [],
   }
   this.throws = this.e = new ThrowingPackrat(this)
   this.doesNotThrow = this.n = this
@@ -67,10 +68,12 @@ Packrat.prototype.load = function(file) {
   })
 }
 
-Packrat.prototype.save = function() {
+Packrat.prototype.save = async function() {
   if (!this._internals.file) {
     return Promise.reject(new this.FileError('no file, use saveAs'))
   }
+  await Promise.all(this._internals.pending_writes)
+  this._internals.pending_writes = []
   return new Promise((resolve, reject) => {
     const writer = fs.createWriteStream(this._internals.file)
     const items = Object.values(this._internals.data)
@@ -91,9 +94,10 @@ Packrat.prototype.save = function() {
       } while (ok && i < n)
       if (!ok) {
         writer.once('drain', write)
-      }
-      if (i === n) {
-        writer.end('', resolve)
+      } else {
+        writer.end('', () => {
+          resolve()
+        })
       }
     }
     write()
@@ -210,7 +214,7 @@ Packrat.prototype._update = function(item) {
     return null
   }
   this._writeTransactionLog(item)
-  this._internals.data[item.id] = id
+  this._internals.data[item.id] = item
   return item
 }
 
@@ -271,8 +275,16 @@ Packrat.prototype.FileError = function(message) {
 }
 
 Packrat.prototype.InvalidIdError.prototype = Object.create(Error.prototype)
+Packrat.prototype.InvalidIdError.prototype.constructor = Packrat.prototype.InvalidIdError
+
 Packrat.prototype.InvalidItemError.prototype = Object.create(Error.prototype)
+Packrat.prototype.InvalidItemError.prototype.constructor = Packrat.prototype.InvalidItemError
+
 Packrat.prototype.ItemNotFoundError.prototype = Object.create(Error.prototype)
+Packrat.prototype.ItemNotFoundError.prototype.constructor = Packrat.prototype.ItemNotFoundError
+
+Packrat.prototype.FileError.prototype = Object.create(Error.prototype)
+Packrat.prototype.FileError.prototype.constructor = Packrat.prototype.FileError
 
 Packrat.prototype._addIdIfNecessary = function(item) {
   if (item.id === undefined) {
@@ -288,7 +300,7 @@ Packrat.prototype._writeTransactionLog = function(item) {
   if (!this._internals.file) {
     return Promise.resolve()
   }
-  return new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
     fs.appendFile(this._internals.file, `${JSON.stringify(item)}\n`, (err) => {
       if (err) {
         console.error(err)
@@ -298,6 +310,8 @@ Packrat.prototype._writeTransactionLog = function(item) {
       }
     })
   })
+  this._internals.pending_writes.push(promise)
+  return promise
 }
 
 function isInvalidItem(item) {

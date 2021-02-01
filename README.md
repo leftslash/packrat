@@ -76,7 +76,7 @@ To make things a little clearer, here's an example of how to use packrat:
 
     item = db.find(e => e.a === 2)
 
-    db.remove(id)
+    db.drop(id)
 
   }
 ```
@@ -216,11 +216,13 @@ Here's a few examples:
 
 ```javascript
   // get an array of uppercase values for the somestring property
+  db.clear() // get rid of any detritus
   db.set({somestring: 'hello'})
   db.set({somestring: 'world'})
   const shouty = db.asArray(Array.prototype.map, e => e.somestring.toUpperCase())
 
   // get sum of somenumber using reduce (note the Array.prototype shorthand)
+  db.clear() // get rid of any detritus
   db.set({somenumber: 1})
   db.set({somenumber: 2})
   db.set({somenumber: 3})
