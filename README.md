@@ -1,8 +1,6 @@
 # packrat
 a zero-dependency, lightweight, file-based JSON database
 
-## NOTE: This project is in development and not ready for use yet.
-
 Packrat allows simple operations on an in-memory dataset which are
 also stored asynchronously in a flat file in JSON format (i.e. it is
 a non-volatile, persistent data store).  Instead of re-writing the
@@ -229,3 +227,8 @@ Here's a few examples:
   const sum = db.asArray([].reduce, (n,i) => n + i.somenumber, 0)
 ```
 
+### Why
+
+Yeah, yeah, we know there are lots of other packages to do this sort
+of thing (i.e.  Mongo, Redis, Sqlite, LevelDB, RocksDB, PouchDB, NeDB,
+LowDB, AirDB, Enmap) but we wanted to do it our way.
