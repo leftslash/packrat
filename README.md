@@ -180,9 +180,9 @@ errors that are defined for packrat and how they could be handled.
   } catch (e) {
     if (e instanceof db.InvalidIdError) {
       ...
-    } else if (e instance of db.InvalidItemError) {
+    } else if (e instanceof db.InvalidItemError) {
       ...
-    } else if (e instance of db.ItemNotFoundError) {
+    } else if (e instanceof db.ItemNotFoundError) {
       ...
     } else {
       ...
@@ -203,7 +203,7 @@ errors that are defined for packrat and how they could be handled.
 These methods return underlying packrat data as a naked, native array.
 Any changes made to the data in these arrays will not be persisted unless
 the underlying item is updated via `set()` or `update()`.  These methods
-are merely for provifing unvarished and performant access on a read-only
+are merely for providing unvarished and performant access on a read-only
 basis (i.e. for returning a list of items to a REST client).
 
 ### All Purpose Array-Method
@@ -218,7 +218,7 @@ Here's a few examples:
   // get an array of uppercase values for the somestring property
   db.set({somestring: 'hello'})
   db.set({somestring: 'world'})
-  const upper = db.asArray(Array.prototype.map, e => e.somestring.toUpperCase())
+  const shouty = db.asArray(Array.prototype.map, e => e.somestring.toUpperCase())
 
   // get sum of somenumber using reduce (note the Array.prototype shorthand)
   db.set({somenumber: 1})
