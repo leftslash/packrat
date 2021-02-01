@@ -1,6 +1,7 @@
 const packrat = require('./packrat')
 
 let db
+let id = 1
 let Packrat 
 
 beforeAll(() => {
@@ -30,14 +31,21 @@ describe('set', () => {
       const item = {}
       const result = db.set(item)
       expect(result).toBe(item)
-      expect(item.id).toBe(1)
+      expect(item.id).toBe(id++)
     })
 
     test('ok: array', () => { 
       const item = []
       const result = db.set(item)
       expect(result).toBe(item)
-      expect(item.id).toBe(2)
+      expect(item.id).toBe(id++)
+    })
+
+    test('ok: array [1]', () => { 
+      const item = [1]
+      const result = db.set(item)
+      expect(result).toBe(item)
+      expect(item.id).toBe(id++)
     })
 
     test('no: string primitive', () => { 
@@ -104,14 +112,14 @@ describe('set', () => {
       const item = { }
       const result = db.set(item)
       expect(result).toBe(item)
-      expect(item.id).toBe(3)
+      expect(item.id).toBe(id++)
     })
 
     test('ok: undefined', () => { 
       const item = { db: undefined }
       const result = db.set(item)
       expect(result).toBe(item)
-      expect(item.id).toBe(4)
+      expect(item.id).toBe(id++)
     })
 
     test('ok: string', () => { 
@@ -203,7 +211,7 @@ describe('throws.set', () => {
       const item = {}
       const result = db.throws.set(item)
       expect(result).toBe(item)
-      expect(item.id).toBe(5)
+      expect(item.id).toBe(id++)
     })
 
     test('no: string', () => { 

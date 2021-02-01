@@ -1,8 +1,8 @@
-node				:= node_modules
-pkg_lock		:= yarn.lock
-pkg_config	:= package.json
-libs				:= jest
-clutter			:= $(node)
+node        := node_modules
+pkg_lock    := yarn.lock
+pkg_config  := package.json
+libs        := jest
+clutter     := $(node)
 
 default: test
 

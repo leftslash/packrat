@@ -1,24 +1,22 @@
 const fs = require('fs')
+const readline = require('readline')
 
-// TODO: re-write load/save to do JSON
 // TODO: add lots more tests
-// TODO: document errors
-// TODO: document keys, values...
-// TODO: create a makefile
 // TODO: add to npm and yarn
 
 function Packrat() {
-  this._internals = {}
-  this._internals.file = null
-  this._internals.data = {}
-  this._internals.nextid = 1
+  this._internals = {
+    data:   {},
+    file:   null,
+    nextid: 1,
+  }
   this.throws = this.e = new ThrowingPackrat(this)
   this.doesNotThrow = this.n = this
 }
 
 function ThrowingPackrat(parent) {
-  this._internals = parent._internals
   this._parent = parent
+  this._internals = parent._internals
   this.throws = this.e = this
   this.doesNotThrow = this.n = parent
 }
@@ -26,18 +24,44 @@ function ThrowingPackrat(parent) {
 ThrowingPackrat.prototype = Object.create(Packrat.prototype)
 ThrowingPackrat.prototype.constructor = ThrowingPackrat
 
-Packrat.prototype.load = function(file) {
+Packrat.prototype.load = function(file) { 
   if (!file) {
-    return Promise.reject()
+    return Promise.reject(new this.FileError('filename must be non-null'))
   }
   return new Promise((resolve, reject) => {
-    fs.readFile(this._internals.file, 'utf8', (err, data) => {
-      if (err) {
-        reject(err)
+    const input = fs.createReadStream(file)
+    const reader = readline.createInterface({ input })
+    reader.on('line', line => {
+      let item
+      try {
+        item = JSON.parse(line)
+      } catch (e) {
+        console.error(`error parsing JSON data: ${line}`)
+        process.exit(1)
+      }
+      if (!item) {
+        return
+      }
+      if (item._deleted === true) {
+        this.drop(item.id)
       } else {
+        if (Number.isInteger(item.id)) {
+          this._internals.nextid = item.id + 1
+        }
+        this.set(item)
+      }
+    })
+    reader.on('close', () => {
+      this._internals.file = file
+      resolve(this)
+    })
+    input.on('error', (err) => {
+      if (err.code === 'ENOENT') {
         this._internals.file = file
-        this._internals.data = data
         resolve(this)
+      } else {
+        console.error(`error reading file: ${file}: ${err}`)
+        process.exit(1)
       }
     })
   })
@@ -45,16 +69,34 @@ Packrat.prototype.load = function(file) {
 
 Packrat.prototype.save = function() {
   if (!this._internals.file) {
-    return Promise.reject()
+    return Promise.reject(new this.FileError('no file, use saveAs'))
   }
   return new Promise((resolve, reject) => {
-    fs.writeFile(this._internals.file, this._internals.data, 'utf8', (err, data) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve()
+    const writer = fs.createWriteStream(this._internals.file)
+    const items = Object.values(this._internals.data)
+    let i = 0, n = items.length
+    const write = () => {
+      let ok = true
+      do {
+        if (items[i]) {
+          const item = `${JSON.stringify(items[i])}\n`
+          ok = writer.write(item, (err) => {
+            if (err) {
+              console.error(`error writing file: ${this._internals.file}`)
+              process.exit(1)
+            }
+          })
+        }
+        i++
+      } while (ok && i < n)
+      if (!ok) {
+        writer.once('drain', write)
       }
-    })
+      if (i === n) {
+        writer.end('', resolve)
+      }
+    }
+    write()
   })
 }
 
@@ -220,6 +262,11 @@ Packrat.prototype.InvalidItemError = function() {
 
 Packrat.prototype.ItemNotFoundError = function() {
   this.message = 'item with this id cannot be found'
+  Error.captureStackTrace(this, Packrat.prototype.InvalidItemError)
+}
+
+Packrat.prototype.FileError = function(message) {
+  this.message = message
   Error.captureStackTrace(this, Packrat.prototype.InvalidItemError)
 }
 
